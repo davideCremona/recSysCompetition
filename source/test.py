@@ -19,5 +19,5 @@ raw_interactions = pd.read_csv(data_path+filename_interactions, sep='\t')
 raw_target_users = pd.read_csv(data_path+filename_target_users, sep='\t')
 raw_user_profile = pd.read_csv(data_path+filename_user_profile, sep='\t')
 
-print raw_user_profile.head()
+print np.unique(raw_interactions['interaction_type'])
 

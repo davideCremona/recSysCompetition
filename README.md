@@ -16,9 +16,9 @@ Interactions that the user performed on the job posting items. Fields:
 - **user_id:** ID of the user who performed the interaction (points to users.id)
 - **item_id:** ID of the item on which the interaction was performed (points to items.id)
 - **interaction_type:** the type of interaction that was performed on the item:
-    1. 1 = the user clicked on the item
-    2. 2 = the user bookmarked the item
-    3. 3 = the user clicked on the reply button or application form button that is shown on some job postings
+    - **1** = the user clicked on the item
+    - **2** = the user bookmarked the item
+    - **3** = the user clicked on the reply button or application form button that is shown on some job postings
 - **created_at:** a unix time stamp timestamp representing the time when the interaction got created
 
 ### Users
@@ -99,23 +99,23 @@ Details about the job postings that were and should be recommended to the users.
 ### Regions
 
 ID  Name
-- 0   not specified
-- 1   Baden-Württemberg
-- 2   Bavaria
-- 3   Berlin
-- 4   Brandenburg
-- 5   Bremen
-- 6   Hamburg
-- 7   Hesse
-- 8   Mecklenburg-Vorpommern
-- 9   Lower Saxony
-- 10  North Rhine-Westphalia
-- 11  Rhineland-Palatinate
-- 12  Saarland
-- 13  Saxony
-- 14  Saxony-Anhalt
-- 15  Schleswig-Holstein
-- 16  Thuringia
+- **0+*   not specified
+- **1**   Baden-Württemberg
+- **2**   Bavaria
+- **3**   Berlin
+- **4**   Brandenburg
+- **5**   Bremen
+- **6**   Hamburg
+- **7**   Hesse
+- **8**   Mecklenburg-Vorpommern
+- **9**   Lower Saxony
+- **10**  North Rhine-Westphalia
+- **11**  Rhineland-Palatinate
+- **12**  Saarland
+- **13**  Saxony
+- **14**  Saxony-Anhalt
+- **15**  Schleswig-Holstein
+- **16**  Thuringia
 
 ### Target Users
 
