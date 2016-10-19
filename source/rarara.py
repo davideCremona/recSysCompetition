@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-
 """
 Variabili costanti (path dei file, ...)
 """
@@ -22,8 +21,5 @@ raw_interactions = pd.read_csv(data_path+filename_interactions, sep='\t')
 raw_target_users = pd.read_csv(data_path+filename_target_users, sep='\t')
 raw_user_profile = pd.read_csv(data_path+filename_user_profile, sep='\t')
 
-unique_users = np.unique(raw_interactions[interactions_user_id])
-unique_items = np.unique(raw_interactions[interactions_item_id])
 
-n_users = len(unique_users)
-n_items = len(unique_items)
+print raw_item_profile[0:0]
