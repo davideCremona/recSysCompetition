@@ -27,3 +27,4 @@ unique_items = np.unique(raw_interactions[interactions_item_id])
 
 n_users = len(unique_users)
 n_items = len(unique_items)
+
