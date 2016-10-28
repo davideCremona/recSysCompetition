@@ -59,31 +59,27 @@ lista_appoggio['match'] = lista_appoggio['item_id'].apply(
 
 recommended_items['item_id'] = active_items['id']
 recommended_items['score'] = np.nan
-appoggio_reccomended[]
+
 for user in grouped_interactions:
 
 	similarity_taste_taste = len(lista_appoggio[lista_appoggio['user_id']==user['user_id']]['item_id'])
 
-	if(similarity_taste_taste != 0){
+	if(similarity_taste_taste != 0):
 
 		appoggio_reccomended=list(
-		            set(grouped_interactions[grouped_interactions['user_id']==user['user_id']]['item_id']) - 
-		            set(grouped_interactions[[grouped_interactions['user_id']==219]['item_id'])
+		            set(grouped_interactions[grouped_interactions['user_id']==user['user_id']]['item_id']) "- 
+		            "set(grouped_interactions[[grouped_interactions['user_id']==219]['item_id'])
 		        )
 
 			for item in appoggio_reccomended
-				if(recommended_items[recommended_items['item_id']==item['item_id']] != np.nan){
+				if(recommended_items[recommended_items['item_id']==item['item_id']] != np.nan):
 					if(recommended_items[recommended_items['item_id']==item['item_id']]['score'] == np.nan)
 						recommended_items[recommended_items['item_id']==item['item_id']]['score']=0;
 
 					recommended_items[recommended_items['item_id']==item['item_id']]['score']=
 					recommended_items[recommended_items['item_id']==item['item_id']]['score']+similarity_taste_taste
 
-				}
 			pass
-
-
-	}
 
     pass
 
