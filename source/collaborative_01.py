@@ -6,6 +6,7 @@ Collaborative filtering recommender system
 """
 
 import pandas as pd
+import nunpy as np
 from scipy.spatial.distance import cosine
 
 """
@@ -39,8 +40,8 @@ raw_interactions = pd.read_csv(data_path+filename_interactions, sep='\t')
 """
 filtro item attivi
 """
-#is_active = raw_item_profile['active_during_test']==1
-#active_items = raw_item_profile[is_active]
+is_active = raw_item_profile['active_during_test']==1
+active_items = raw_item_profile[is_active]
 
 """
 per ogni utente, prendo la lista di item con cui ha interagito
@@ -54,19 +55,39 @@ lista_appoggio = grouped_interactions;
 lista_appoggio['match'] = lista_appoggio['item_id'].apply(
     lambda x: len(set(x).intersection(set(raw_interactions[raw_interactions['user_id']==219]['item_id']))))
 
-recommended_items = []
-i = 1
-while len(recommended_items) <= 5:
-    recommended_items.extend(
-        list(
-            set(raw_interactions[raw_interactions['user_id']==219]['item_id']) - 
-            set(lista_appoggio[i:i]['item_id'])
-        )
-    )
-    i += 1
+
+
+recommended_items['item_id'] = active_items['id']
+recommended_items['score'] = np.nan
+appoggio_reccomended[]
+for user in grouped_interactions:
+
+	similarity_taste_taste = len(lista_appoggio[lista_appoggio['user_id']==user['user_id']]['item_id'])
+
+	if(similarity_taste_taste != 0){
+
+		appoggio_reccomended=list(
+		            set(grouped_interactions[grouped_interactions['user_id']==user['user_id']]['item_id']) - 
+		            set(grouped_interactions[[grouped_interactions['user_id']==219]['item_id'])
+		        )
+
+			for item in appoggio_reccomended
+				if(recommended_items[recommended_items['item_id']==item['item_id']] != np.nan){
+					if(recommended_items[recommended_items['item_id']==item['item_id']]['score'] == np.nan)
+						recommended_items[recommended_items['item_id']==item['item_id']]['score']=0;
+
+					recommended_items[recommended_items['item_id']==item['item_id']]['score']=
+					recommended_items[recommended_items['item_id']==item['item_id']]['score']+similarity_taste_taste
+
+				}
+			pass
+
+
+	}
+
     pass
 
-recommended_items = recommended_items[:5]
+recommended_items.sort('score', ascending=1)
 
 print recommended_items
 
