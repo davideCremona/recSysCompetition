@@ -19,7 +19,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 Variabili costanti (path dei file, ...)
 """
 data_path = '../data/'
-filename_interactions = 'interactions.csv'
+filename_interactions = 'interactions_reduced.csv'
 filename_active_item  = 'active_item_profile.csv'
 filename_item_profile = 'item_profile.csv'
 filename_target_users = 'target_users.csv'
@@ -47,6 +47,7 @@ active_items = raw_item_profile[is_active]
 per ogni utente, prendo la lista di item con cui ha interagito
 """
 interactions_user_item = raw_interactions[['user_id','item_id']]
+
 grouped_interactions = interactions_user_item.groupby('user_id').aggregate(lambda x: list(x))
 
 
@@ -57,31 +58,47 @@ lista_appoggio['match'] = lista_appoggio['item_id'].apply(
 
 
 
-recommended_items = active_items['id']
-recommended_items['score'] = np.nan
+recommended_items = active_items
+recommended_items['score'] = recommended_items['id'].apply(lambda x: 0)
+recommended_items = recommended_items.drop('active_during_test', axis=1)
+recommended_items = recommended_items.drop('created_at', axis=1)
+recommended_items = recommended_items.drop('tags', axis=1)
+recommended_items = recommended_items.drop('employment', axis=1)
+recommended_items = recommended_items.drop('region', axis=1)
+recommended_items = recommended_items.drop('country', axis=1)
+recommended_items = recommended_items.drop('latitude', axis=1)
+recommended_items = recommended_items.drop('longitude', axis=1)
+recommended_items = recommended_items.drop('industry_id', axis=1)
+recommended_items = recommended_items.drop('discipline_id', axis=1)
+recommended_items = recommended_items.drop('career_level', axis=1)
+recommended_items = recommended_items.drop('title', axis=1)
+recommended_items =recommended_items.set_index(['id'])
 
-for user in grouped_interactions:
+print recommended_items.head()
 
-	similarity_taste_taste = len(lista_appoggio[lista_appoggio['user_id']==user['user_id']]['item_id'])
+for user_index , user_row in grouped_interactions.iterrows():
 
-	if(similarity_taste_taste != 0):
+	similarity_taste_taste = lista_appoggio[lista_appoggio.index==user_index]['match']
 
-		appoggio_reccomended=list(set(grouped_interactions[grouped_interactions['user_id']==user['user_id']]['item_id']) - set(grouped_interactions[grouped_interactions['user_id']==219]['item_id']))
 
-		for item in appoggio_reccomended:
-			if(active_items[active_items['item_id']==item['item_id']] != nill):
-				if recommended_items[recommended_items['item_id']==item['item_id']]['score'] == np.nan :
-					recommended_items[recommended_items['item_id']==item['item_id']]['score']=0;
+	if(similarity_taste_taste.item() != 0):
 
-				recommended_items[recommended_items['item_id']==item['item_id']]['score']=recommended_items[recommended_items['item_id']==item['item_id']]['score']+similarity_taste_taste
+		for item_index in user_row['item_id']:
+
+			if item_index in recommended_items.index :
+				if item_index not in grouped_interactions.get_value(219 ,'item_id', takeable=False) :
+					print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+					print	recommended_items.loc[[item_index]]
+					recommended_items.set_value(item_index, 'score', recommended_items.get_value(item_index, 'score', takeable=False) +  similarity_taste_taste.item())					
+					print	recommended_items.loc[[item_index]]
+					print 
 
 			
 
 
+recommended_items=recommended_items.sort_values(by='score', ascending=False)
 
-recommended_items.sort('score', ascending=1)
-
-print recommended_items
+print recommended_items.head()
 
 
 """
