@@ -6,7 +6,7 @@ Collaborative filtering recommender system
 """
 
 import pandas as pd
-import nunpy as np
+import numpy as np
 from scipy.spatial.distance import cosine
 
 """
@@ -31,8 +31,8 @@ interactions_item_id = 'item_id'
 
 """
 Lettura dei file csv
-"""
-#raw_item_profile = pd.read_csv(data_path+filename_item_profile, sep='\t', index_col='id')
+""" 
+raw_item_profile = pd.read_csv(data_path+filename_item_profile, sep='\t' )
 raw_interactions = pd.read_csv(data_path+filename_interactions, sep='\t')
 #raw_target_users = pd.read_csv(data_path+filename_target_users, sep='\t', index_col='user_id')
 #raw_user_profile = pd.read_csv(data_path+filename_user_profile, sep='\t', index_col='id')
@@ -57,7 +57,7 @@ lista_appoggio['match'] = lista_appoggio['item_id'].apply(
 
 
 
-recommended_items['item_id'] = active_items['id']
+recommended_items = active_items['id']
 recommended_items['score'] = np.nan
 
 for user in grouped_interactions:
@@ -66,22 +66,18 @@ for user in grouped_interactions:
 
 	if(similarity_taste_taste != 0):
 
-		appoggio_reccomended=list(
-		            set(grouped_interactions[grouped_interactions['user_id']==user['user_id']]['item_id']) "- 
-		            "set(grouped_interactions[[grouped_interactions['user_id']==219]['item_id'])
-		        )
+		appoggio_reccomended=list(set(grouped_interactions[grouped_interactions['user_id']==user['user_id']]['item_id']) - set(grouped_interactions[grouped_interactions['user_id']==219]['item_id']))
 
-			for item in appoggio_reccomended
-				if(recommended_items[recommended_items['item_id']==item['item_id']] != np.nan):
-					if(recommended_items[recommended_items['item_id']==item['item_id']]['score'] == np.nan)
-						recommended_items[recommended_items['item_id']==item['item_id']]['score']=0;
+		for item in appoggio_reccomended:
+			if(active_items[active_items['item_id']==item['item_id']] != nill):
+				if recommended_items[recommended_items['item_id']==item['item_id']]['score'] == np.nan :
+					recommended_items[recommended_items['item_id']==item['item_id']]['score']=0;
 
-					recommended_items[recommended_items['item_id']==item['item_id']]['score']=
-					recommended_items[recommended_items['item_id']==item['item_id']]['score']+similarity_taste_taste
+				recommended_items[recommended_items['item_id']==item['item_id']]['score']=recommended_items[recommended_items['item_id']==item['item_id']]['score']+similarity_taste_taste
 
-			pass
+			
 
-    pass
+
 
 recommended_items.sort('score', ascending=1)
 
