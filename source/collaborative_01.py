@@ -19,7 +19,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 Variabili costanti (path dei file, ...)
 """
 data_path = '../data/'
-filename_interactions = 'interactions_reduced.csv'
+filename_interactions = 'interactions.csv'
 filename_active_item  = 'active_item_profile.csv'
 filename_item_profile = 'item_profile.csv'
 filename_target_users = 'target_users.csv'
@@ -34,7 +34,7 @@ Lettura dei file csv
 """ 
 raw_item_profile = pd.read_csv(data_path+filename_item_profile, sep='\t' )
 raw_interactions = pd.read_csv(data_path+filename_interactions, sep='\t')
-#raw_target_users = pd.read_csv(data_path+filename_target_users, sep='\t', index_col='user_id')
+raw_target_users = pd.read_csv(data_path+filename_target_users, sep='\t', index_col="user_id")
 #raw_user_profile = pd.read_csv(data_path+filename_user_profile, sep='\t', index_col='id')
 
 """
@@ -50,16 +50,9 @@ interactions_user_item = raw_interactions[['user_id','item_id']]
 
 grouped_interactions = interactions_user_item.groupby('user_id').aggregate(lambda x: list(x))
 
-
-lista_appoggio = grouped_interactions;
-
-lista_appoggio['match'] = lista_appoggio['item_id'].apply(
-    lambda x: len(set(x).intersection(set(raw_interactions[raw_interactions['user_id']==219]['item_id']))))
-
-
+data  = np.empty([len(raw_target_users.index), 2], dtype="string")
 
 recommended_items = active_items
-recommended_items['score'] = recommended_items['id'].apply(lambda x: 0)
 recommended_items = recommended_items.drop('active_during_test', axis=1)
 recommended_items = recommended_items.drop('created_at', axis=1)
 recommended_items = recommended_items.drop('tags', axis=1)
@@ -73,32 +66,49 @@ recommended_items = recommended_items.drop('discipline_id', axis=1)
 recommended_items = recommended_items.drop('career_level', axis=1)
 recommended_items = recommended_items.drop('title', axis=1)
 recommended_items =recommended_items.set_index(['id'])
+recommended_items['score'] = 0
 
-print recommended_items.head()
+for current_target_user in raw_target_users.index:
+	lista_appoggio = grouped_interactions;
+	try :
+		lista_appoggio['match'] = lista_appoggio['item_id'].apply(
+		    lambda x: len(set(x).intersection(set(grouped_interactions.get_value(current_target_user ,'item_id', takeable=False)))))
 
-for user_index , user_row in grouped_interactions.iterrows():
+		
+		recommended_items['score'] = recommended_items['score'].apply(lambda x: 0)
+		
+		lista_appoggio=lista_appoggio[lista_appoggio['match']!=0]
 
-	similarity_taste_taste = lista_appoggio[lista_appoggio.index==user_index]['match']
+		for user_index , user_row in lista_appoggio.iterrows():
 
-
-	if(similarity_taste_taste.item() != 0):
-
-		for item_index in user_row['item_id']:
-
-			if item_index in recommended_items.index :
-				if item_index not in grouped_interactions.get_value(219 ,'item_id', takeable=False) :
-					print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-					print	recommended_items.loc[[item_index]]
-					recommended_items.set_value(item_index, 'score', recommended_items.get_value(item_index, 'score', takeable=False) +  similarity_taste_taste.item())					
-					print	recommended_items.loc[[item_index]]
-					print 
-
-			
+			similarity_taste_taste = lista_appoggio[lista_appoggio.index==user_index]['match']
 
 
-recommended_items=recommended_items.sort_values(by='score', ascending=False)
+			if(similarity_taste_taste.item() != 0):
 
-print recommended_items.head()
+				for item_index in user_row['item_id']:
+
+					if item_index in recommended_items.index :
+						if item_index not in grouped_interactions.get_value(current_target_user ,'item_id', takeable=False) :
+							
+							recommended_items.set_value(item_index, 'score', recommended_items.get_value(item_index, 'score', takeable=False) +  similarity_taste_taste.item())					
+							
+
+		recommended_items=recommended_items.sort_values(by='score', ascending=False)
+		to_recommend = str(recommended_items.head().index[0])+" "+str(recommended_items.head().index[1])+" "+str(recommended_items.head().index[2])+" "+str(recommended_items.head().index[3])+" "+str(recommended_items.head().index[4])
+
+	except KeyError :
+		to_recommend = "2778525 1244196 1386412 278589 657183"
+
+
+
+	print current_target_user, "RACOMMENDATION:"
+	print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+	row = [str(current_target_user), to_recommend]
+	data = np.vstack([data, row])
+
+
+np.savetxt(data_path+'submission_03.csv', data, delimiter=',', fmt="%s")
 
 
 """
