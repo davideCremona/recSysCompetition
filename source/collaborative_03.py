@@ -26,16 +26,16 @@ filename_user_profile = 'user_profile.csv'
 interactions_user_id = 'user_id'
 interactions_item_id = 'item_id'
 
+click_click_weight = 1
+
 
 """
 Lettura dei file csv
 """
-raw_item_profile = pd.read_csv(data_path + filename_item_profile, sep='\t')
+raw_item_profile = pd.read_csv(data_path + filename_item_profile, sep='\t', index_col='id')
 raw_interactions = pd.read_csv(data_path + filename_interactions, sep='\t')
-"""
-raw_target_users = pd.read_csv(data_path+filename_target_users, sep='\t', index_col='user_id')
-raw_user_profile = pd.read_csv(data_path+filename_user_profile, sep='\t', index_col='id')
-"""
+raw_target_users = pd.read_csv(data_path + filename_target_users, sep='\t', index_col='user_id')
+raw_user_profile = pd.read_csv(data_path + filename_user_profile, sep='\t', index_col='user_id')
 
 """
 filtro item attivi
@@ -56,8 +56,6 @@ def nanReplace(career):
         return career
 
 
-
-
 active_items['tags'] = active_items['tags'].apply(lambda x: str(x).split(','))
 active_items = active_items.drop('latitude', axis=1)
 active_items = active_items.drop('longitude', axis=1)
@@ -71,13 +69,9 @@ active_items['region'] = active_items['region'].apply(lambda x: nanReplace(x)).a
 active_items['employment'] = active_items['employment'].apply(lambda x: nanReplace(x)).astype(int)
 
 
-
-
 """
 items similarity
 """
-
-
 def titleSim(title1, title2):
     return "not implemented yet"
 
@@ -111,7 +105,6 @@ def positionSim(latitude1, longitude1, latitude2, longitude2):
 def employmentSim(employment1, employment2):
     return employment1 == employment2
 
-
 # this is important, implementation of jaccard distance.
 def tagsSim(tags1, tags2):
     setTags1 = set(tags1.item())
@@ -138,12 +131,67 @@ def itemSim(item1, item2):
     return sum(nominator)
 
 
-active_items['score']=0
-
-grupped_interaction= raw_interactions[['user_id', 'item_id', 'interaction_type']]
-
-grupped_interaction = grupped_interaction.groupby('user_id')
 
 
-print grupped_interaction.head()
 
+
+grupped_interaction = raw_interactions[['user_id', 'item_id', 'interaction_type']]
+grupped_interaction_user = grupped_interaction.groupby(['user_id','interaction_type'])
+grupped_interaction_item = grupped_interaction.groupby(['item_id','interaction_type'])
+
+
+def getInteractionsForUser(user, interaction_type):
+    try:
+        interactions = grupped_interaction_user.get_group((user,interaction_type))
+        return interactions
+    except KeyError:
+        print "No interactions of type "+str(interaction_type)+" for: "+str(target_user)
+        return None
+
+for target_user in raw_target_users.index:
+
+    active_items['score']=0
+    print "Starting Target User: "+str(target_user)
+
+    tu_clicks = getInteractionsForUser(target_user, 1)
+    tu_bookmarks = getInteractionsForUser(target_user, 2)
+    tu_apply = getInteractionsForUser(target_user, 3)
+
+    if tu_clicks is not None:
+        for item_clicked in tu_clicks['item_id']:
+            users_also_clicked = grupped_interaction_item.get_group((item_clicked,1))
+            for user_also_clicked in users_also_clicked['user_id']:
+                items_for_user_also_clicked = getInteractionsForUser(user_also_clicked,1)
+                if items_for_user_also_clicked is not None:
+                    for item in items_for_user_also_clicked['item_id']:
+                        try:
+                            active_items.set_value(item, 'score', active_items.get_value(item, 'score', takeable=False)+click_click_weight)
+                        except KeyError:
+                            pass
+                            #print "Item "+str(item)+" is a bad guy"
+        for item_clicked in tu_clicks['item_id']:
+            active_items.set_value(item, 'score', 0);
+
+    active_items = active_items.sort_values('score', ascending=False)
+    print active_items['score'].head(10)
+
+    if tu_bookmarks is not None:
+        # azioni da fare per bookmarks
+        pass
+
+    if tu_apply is not None:
+        # azioni da fare per apply
+        pass
+
+    # raccomandazione:
+
+
+
+
+
+"""
+for (user, interaction_type), tuples in grupped_interaction:
+    print "------------------------------------------------------------------------------------"
+    print "User: "+str(user)+" Has interacted as: "+str(interaction_type)+" for items:"+"\n"
+
+"""
