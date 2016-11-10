@@ -5,6 +5,7 @@
 Collaborative filtering recommender system
 """
 import pandas as pd
+import numpy as np
 import math
 
 """
@@ -131,72 +132,72 @@ def itemSim(item1, item2):
     return sum(nominator)
 
 
+maxTimestamp = raw_interactions['created_at'].max()
+minTimestamp = raw_interactions['created_at'].min()
+
+raw_interactions['created_at'] = raw_interactions['created_at'].apply(lambda x: np.interp(x, [minTimestamp, maxTimestamp], [0, 1]))
 
 
+grupped_interaction = raw_interactions[['user_id', 'item_id', 'interaction_type','created_at']]
+grupped_interaction_user = grupped_interaction.groupby(['user_id'])
+grupped_interaction_item = grupped_interaction.groupby(['item_id'])
 
 
-grupped_interaction = raw_interactions[['user_id', 'item_id', 'interaction_type']]
-grupped_interaction_user = grupped_interaction.groupby(['user_id','interaction_type'])
-grupped_interaction_item = grupped_interaction.groupby(['item_id','interaction_type'])
-
-
-def getInteractionsForUser(user, interaction_type):
+def getInteractionsForUser(user):
     try:
-        interactions = grupped_interaction_user.get_group((user,interaction_type))
+        interactions = grupped_interaction_user.get_group((user))
         return interactions
     except KeyError:
-        print "No interactions of type "+str(interaction_type)+" for: "+str(target_user)
+        print "No interactions for: "+str(target_user)
         return None
+
+
+data = np.empty([len(raw_target_users.index), 2], dtype="string")
+
 
 for target_user in raw_target_users.index:
 
-    active_items['score']=0
+    active_items['score']=0.0
     print "Starting Target User: "+str(target_user)
 
-    tu_clicks = getInteractionsForUser(target_user, 1)
-    tu_bookmarks = getInteractionsForUser(target_user, 2)
-    tu_apply = getInteractionsForUser(target_user, 3)
+    tu_interactions = getInteractionsForUser(target_user)
 
-    if tu_clicks is not None:
-        for item_clicked in tu_clicks['item_id']:
-            users_also_clicked = grupped_interaction_item.get_group((item_clicked,1))
-            for user_also_clicked in users_also_clicked['user_id']:
-                items_for_user_also_clicked = getInteractionsForUser(user_also_clicked,1)
-                if items_for_user_also_clicked is not None:
-                    for item in items_for_user_also_clicked['item_id']:
+    if tu_interactions is not None:
+        for int_item in tu_interactions['item_id']:
+            users_also_interacted = grupped_interaction_item.get_group((int_item))
+            for user_also_interacted in users_also_interacted['user_id']:
+                items_of_user_also_interacted = getInteractionsForUser(user_also_interacted)
+                if items_of_user_also_interacted is not None:
+                    for index, row in items_of_user_also_interacted.iterrows():
+                        item = row['item_id']
+                        created_at = row['created_at']
                         try:
-                            active_items.set_value(item, 'score', active_items.get_value(item, 'score', takeable=False)+click_click_weight)
+                            if int(item) != int(int_item):
+                                active_items.set_value(int(item), 'score', (float(active_items.get_value(int(item), 'score', takeable=False))
+                                    + float(click_click_weight)) * float(created_at))
                         except KeyError:
                             pass
-                            #print "Item "+str(item)+" is a bad guy"
 
-        for item_clicked in tu_clicks['item_id']:
+        for item_clicked in tu_interactions['item_id']:
             active_items.set_value(item, 'score', 0);
 
         active_items = active_items.sort_values('score', ascending=False)
-        to_recommend = active_items['id'].head(5)
-        to_recommend = to_recommend[0]
+        
+        to_recommend = active_items[:5].index
+        to_recommend = list(to_recommend)
+        to_recommend = str(to_recommend[0])+" "+str(to_recommend[1])+" "+str(to_recommend[2])+" "+str(to_recommend[3])+" "+str(to_recommend[4])
+
     else:
         # top popular
         to_recommend = "2778525 1244196 1386412 278589 657183"
 
-    if tu_bookmarks is not None:
-        # azioni da fare per bookmarks
-        pass
+    print "####################################################"
+    print "Recommendations for "+str(target_user)+" are: "
+    print to_recommend
 
-    if tu_apply is not None:
-        # azioni da fare per apply
-        pass
+    row = [str(target_user), to_recommend]
+    data = np.vstack([data, row])
 
-    # raccomandazione:
+print "saving file"
+np.savetxt(data_path+'submission_03_01.csv', data, delimiter=',', fmt="%s")
 
-
-
-
-
-"""
-for (user, interaction_type), tuples in grupped_interaction:
-    print "------------------------------------------------------------------------------------"
-    print "User: "+str(user)+" Has interacted as: "+str(interaction_type)+" for items:"+"\n"
-
-"""
