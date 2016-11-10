@@ -21,7 +21,7 @@ data_path = '../data/'
 filename_interactions = 'interactions.csv'
 filename_active_item = 'active_item_profile.csv'
 filename_item_profile = 'item_profile.csv'
-filename_target_users = 'target_users.csv'
+filename_target_users = 'target_users_red.csv'
 filename_user_profile = 'user_profile.csv'
 
 interactions_user_id = 'user_id'
