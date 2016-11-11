@@ -143,6 +143,14 @@ grupped_interaction_user = grupped_interaction.groupby(['user_id'])
 grupped_interaction_item = grupped_interaction.groupby(['item_id'])
 
 
+def getInteractionsForItems(item):
+    try:
+        interactions = grupped_interaction_item.get_group((item))
+        return interactions
+    except KeyError:
+        #print "No interactions with item: "+str(item)
+        return None
+
 def getInteractionsForUser(user):
     try:
         interactions = grupped_interaction_user.get_group((user))
@@ -151,49 +159,30 @@ def getInteractionsForUser(user):
         #print "No interactions for: "+str(target_user)
         return None
 
+def averageRatingOfUser(interactions):
+    return float(sum(interactions['interaction_type']))/float(len(interactions))
+
 
 data = np.empty([len(raw_target_users.index), 2], dtype="string")
 
 
-for target_user in raw_target_users.index:
+for (user), user_interactions in grupped_interaction_user:
+    
 
-    active_items['score']=0.0
 
-    tu_interactions = getInteractionsForUser(target_user)
+#for target_user in raw_target_users.index:
 
-    if tu_interactions is not None:
-        for int_item in tu_interactions['item_id']:
-            users_also_interacted = grupped_interaction_item.get_group((int_item))
-            for user_also_interacted in users_also_interacted['user_id']:
-                items_of_user_also_interacted = getInteractionsForUser(user_also_interacted)
-                if items_of_user_also_interacted is not None:
-                    for index, row in items_of_user_also_interacted.iterrows():
-                        item = row['item_id']
-                        created_at = row['created_at']
-                        try:
-                            if int(item) != int(int_item):
-                                active_items.set_value(int(item), 'score', (float(active_items.get_value(int(item), 'score', takeable=False))
-                                    + float(click_click_weight)) * float(created_at))
-                        except KeyError:
-                            pass
+    
 
-        for item_clicked in tu_interactions['item_id']:
-            active_items.set_value(item, 'score', 0);
-
-        active_items = active_items.sort_values('score', ascending=False)
-        
-        to_recommend = active_items[:5].index
-        to_recommend = list(to_recommend)
-        to_recommend = str(to_recommend[0])+" "+str(to_recommend[1])+" "+str(to_recommend[2])+" "+str(to_recommend[3])+" "+str(to_recommend[4])
-
-    else:
-        # top popular
-        to_recommend = "2778525 1244196 1386412 278589 657183"
-    print str(target_user)+","+to_recommend
-
-    row = [str(target_user), to_recommend]
-    data = np.vstack([data, row])
+   
 
 print "saving file"
+
+
+"""
+to save the row:
+ row = [str(target_user), to_recommend]
+    data = np.vstack([data, row])
+"""
 np.savetxt(data_path+'submission_03_01.csv', data, delimiter=',', fmt="%s")
 
