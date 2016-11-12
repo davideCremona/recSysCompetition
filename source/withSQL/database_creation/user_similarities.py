@@ -31,11 +31,16 @@ Queries
 """
 
 def getTargetUsers(cursor):
-    sql = "SELECT user_id FROM target_users"
+    sql = "SELECT user_id FROM target_users LIMIT 5000 OFFSET 5000"
     cursor.execute(sql)
     return cursor.fetchall()
 
-def getOthersUsers(cursor):
+def getOtherUsers(cursor, user):
+    sql = "SELECT DISTINCT user_id FROM user_rating_matrix WHERE user_id!=%s"
+    cursor.execute(sql, (user))
+    return cursor.fetchall()
+
+def getAllUsersInURM(cursor):
     sql = "SELECT DISTINCT user_id FROM user_rating_matrix"
     cursor.execute(sql)
     return cursor.fetchall()
@@ -45,38 +50,51 @@ def lenIntersection(cursor, user1, user2):
     cursor.execute(sql, (user1, user2))
     return cursor.fetchone()['len']
 
-def lenInteractionsUser(cursor, user):
-    sql = "SELECT COUNT(*) AS len FROM user_rating_matrix WHERE user_id=%s"
+def getNormImplicit(cursor, user):
+    sql = "SELECT norm_implicit FROM user_meta WHERE user_id=%s"
     cursor.execute(sql, (user))
-    return cursor.fetchone()['len']
+    return cursor.fetchone()['norm_implicit'] 
 
 def insertSimilarity(cursor, target, other, sim):
     sql = "INSERT IGNORE INTO user_user_sim (target_user, other_user, similarity) VALUES (%s, %s, %s)"
     cursor.execute(sql, (target, other, sim))
 
-def cosine_similarity(cursor, user1, user2):
+def cosine_similarity(cursor, user1, user2, norm1, norm2):
     len_intersection = lenIntersection(cursor, user1, user2)
-    len_1 = lenInteractionsUser(cursor, user1)
-    len_2 = lenInteractionsUser(cursor, user2)
-    return float(len_intersection)/float(math.sqrt(float(math.pow(len_1,2)))*math.sqrt(float(math.pow(len_2,2))))
+    return float(int(len_intersection)/(int(norm1)*int(norm2)))
+
+def getNorms(cursor):
+    sql = "SELECT * FROM user_meta"
+    cursor.execute(sql)
+    return cursor.fetchall()
 
 try:
     with connection.cursor() as cursor:
+
+        norms = dict()
+        for norm_raw in getNorms(cursor):
+            user_id = norm_raw['user_id']
+            norm = norm_raw['norm_implicit']
+            norms[user_id] = norm
+
+        print "Norms ok"
+
         for record in getTargetUsers(cursor):
             target_user = record['user_id']
-            now = datetime.now()
-            time_start = time.mktime(now.timetuple())
+            #now = datetime.now()
+            #time_start = time.mktime(now.timetuple())
 
-            for other_user_record in getOthersUsers(cursor):
+            for other_user_record in getOtherUsers(cursor, target_user):
                 other_user_id = other_user_record['user_id']
-                sim = cosine_similarity(cursor, target_user, other_user_id)
+                sim = cosine_similarity(cursor, target_user, other_user_id, norms[target_user], norms[other_user_id])
                 if sim != 0.0:
                     insertSimilarity(cursor, target_user, other_user_id, sim)
 
-            now = datetime.now()
-            time_finish = time.mktime(now.timetuple())
-            print "Finished user "+str(target_user)+" in "+str(time_finish-time_start)
-            connection.commit()
+            #now = datetime.now()
+            #time_finish = time.mktime(now.timetuple())
+            print "Finished user "+str(target_user)#+" in "+str(time_finish-time_start)
+
+        connection.commit()
 
 finally:
     connection.close()
