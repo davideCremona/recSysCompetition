@@ -1,6 +1,6 @@
 user_id	jobroles	career_level	discipline_id	industry_id	country	region	experience_n_entries_class	experience_years_experience	experience_years_in_current	edu_degree	edu_fieldofstudies
 118777	2705438,2004502	3	0	0	ch	0	3	4	2	1	4
-2613732	1179799,3081292,2501578	0	0	15	de	0	1	0	0	0	
+2613732	1179799,3081292,2501578	0	0	15	de	0	1	0	0	0	0
 1685992	0	NULL	0	0	de	10	3	4	0	1	3
 332162	0	NULL	0	0	de	9	1	0	0	3	7
 1583325	0	NULL	0	0	de	7	1	0	0	0	8,2
