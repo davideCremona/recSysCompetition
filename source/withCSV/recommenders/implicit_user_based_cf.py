@@ -92,8 +92,8 @@ active_items_id_set = set(active_items.index)
 """
 raccomandazioni
 """
-target_users = pd.read_csv("../../../data/target_users.csv", sep="\t", index_col = "user_id")
-submission = pd.read_csv("../../../data/target_users.csv", sep='\t', index_col="user_id")
+target_users = pd.read_csv("../../../data/target_users_1_b.csv", sep="\t", index_col = "user_id")
+submission = pd.read_csv("../../../data/target_users_1_b.csv", sep='\t', index_col="user_id")
 top_popular = ["2778525","1244196","1386412","278589","657183"]
 submission['recommended_items'] = ' '.join(top_popular) # standard top popular
 
@@ -106,7 +106,7 @@ j=0
 for target_user in target_users.index:
     
     if j%100 == 0:
-        print "Mancano: "+str(10000-j)
+        print "Mancano: "+str(2500-j)
 
     if target_user in knn_user.keys():
 
@@ -129,14 +129,17 @@ for target_user in target_users.index:
 
         sorted_leaderboard = sorted(items_leaderboard, key=items_leaderboard.get)
         to_recommend = sorted_leaderboard[:5]
-        
-        if len(to_recommend) < 5:
-            to_recommend.extend(top_popular)
-        
-        to_recommend = to_recommend[:5]
         to_recommend = [str(i) for i in to_recommend]
-        submission.set_value(target_user, 'recommended_items', ' '.join(to_recommend))
 
+        to_recommend_set = set(to_recommend)
+        top_pop_set = set(top_popular)
+
+        if len(to_recommend) < 5:
+            diff = top_pop_set - to_recommend_set.intersection(top_pop_set)
+            to_recommend.extend(list(diff))
+
+        to_recommend = to_recommend[:5]
+        submission.set_value(target_user, 'recommended_items', ' '.join(to_recommend))
 
     j += 1
 
@@ -144,5 +147,5 @@ now = datetime.now()
 time_finish = time.mktime(now.timetuple())
 print "Finish Recommendations in "+str(time_finish-time_start)
 
-submission.to_csv("../../../data/submission_03_02_01.csv", sep=",")
+submission.to_csv("../../../data/submission_03_02_01_1_b.csv", sep=",")
 
