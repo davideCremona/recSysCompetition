@@ -92,8 +92,8 @@ active_items_id_set = set(active_items.index)
 """
 raccomandazioni
 """
-target_users = pd.read_csv("../../../data/target_users_1_b.csv", sep="\t", index_col = "user_id")
-submission = pd.read_csv("../../../data/target_users_1_b.csv", sep='\t', index_col="user_id")
+target_users = pd.read_csv("../../../data/target_users.csv", sep="\t", index_col = "user_id")
+submission = pd.read_csv("../../../data/target_users.csv", sep='\t', index_col="user_id")
 top_popular = ["2778525","1244196","1386412","278589","657183"]
 submission['recommended_items'] = ' '.join(top_popular) # standard top popular
 
@@ -147,5 +147,5 @@ now = datetime.now()
 time_finish = time.mktime(now.timetuple())
 print "Finish Recommendations in "+str(time_finish-time_start)
 
-submission.to_csv("../../../data/submission_03_02_01_1_b.csv", sep=",")
+submission.to_csv("../../../data/submission_03_02_02.csv", sep=",")
 
