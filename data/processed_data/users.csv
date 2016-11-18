@@ -1,4 +1,4 @@
-user_id,career_level,discipline_id,industry_id,country,region,experience_n_entries_class,experience_years_experience,experience_years_in_current,edu_degree_average_rating
+user_id,career_level,discipline_id,industry_id,country,region,experience_n_entries_class,experience_years_experience,experience_years_in_current,edu_degree,average_rating
 "1000010",NULL,"0","0","de","0",NULL,NULL,NULL,"0","0"
 "1000049","3","13","9","de","1","3","4","3","2","1"
 "1000051","0","0","10","de","1","3","0","0","0","1"
